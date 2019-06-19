@@ -22,7 +22,7 @@ public class BuildBuilder {
 
     public BuildBuilder() {
     }
-
+    
     public BuildDataCreateRequest createBuildRequestFromRun(Run<?, ?> run, String jenkinsName, TaskListener listener, BuildStatus result, boolean buildChangeSet, LinkedList<BuildStage> stages) {
 
         BuildDataCreateRequest request = new BuildDataCreateRequest();
@@ -49,7 +49,14 @@ public class BuildBuilder {
         }
         return request;
     }
+    
+    public BuildDataCreateRequest createBuildRequestFromRun(Run<?, ?> run, String jenkinsName, TaskListener listener, BuildStatus result, String applicationName, boolean buildChangeSet, LinkedList<BuildStage> stages) {
 
+    	BuildDataCreateRequest toReturn = createBuildRequestFromRun(run, jenkinsName, listener, result, buildChangeSet, stages);
+    	toReturn.setJobName(applicationName);
+    	return toReturn;
+    }
+    
     public BuildDataCreateRequest createBuildRequest(AbstractBuild<?, ?> build, String jenkinsName, TaskListener listener, boolean isComplete, boolean buildChangeSet,LinkedList<BuildStage> stages) {
         BuildDataCreateRequest request = new BuildDataCreateRequest();
         BuildStatus result = null;

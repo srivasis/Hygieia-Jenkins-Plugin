@@ -5,6 +5,7 @@ import com.capitalone.dashboard.model.BuildStatus;
 import hudson.Extension;
 import hudson.model.Run;
 import hudson.model.TaskListener;
+import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 import hygieia.builder.BuildBuilder;
 import jenkins.model.Jenkins;
@@ -20,6 +21,7 @@ import org.jenkinsci.plugins.workflow.steps.AbstractSynchronousNonBlockingStepEx
 import org.jenkinsci.plugins.workflow.steps.StepContextParameter;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
+import org.kohsuke.stapler.QueryParameter;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
@@ -31,6 +33,7 @@ import java.util.List;
 public class HygieiaBuildPublishStep extends AbstractStepImpl {
 
 	private String buildStatus;
+	private String applicationName;
 
 	public String getBuildStatus() {
 		return buildStatus;
@@ -40,12 +43,23 @@ public class HygieiaBuildPublishStep extends AbstractStepImpl {
 	public void setBuildStatus(String buildStatus) {
 		this.buildStatus = buildStatus;
 	}
-
-	@DataBoundConstructor
-	public HygieiaBuildPublishStep(@Nonnull String buildStatus) {
-		this.buildStatus = buildStatus;
+	
+	public String getApplicationName() {
+		return applicationName;
 	}
 
+	@DataBoundSetter
+	public void setApplicationName(String appname) {
+		this.applicationName = appname;
+	}
+	
+
+	@DataBoundConstructor
+	public HygieiaBuildPublishStep(@Nonnull String buildStatus, @Nonnull String applicationName) {
+		this.buildStatus = buildStatus;
+		this.applicationName = applicationName;
+	}
+	
 	@Extension
 	public static class DescriptorImpl extends AbstractStepDescriptorImpl {
 
@@ -70,6 +84,14 @@ public class HygieiaBuildPublishStep extends AbstractStepImpl {
 			model.add("Unstable", BuildStatus.Unstable.toString());
 			model.add("Aborted", BuildStatus.Aborted.toString());
 			return model;
+		}
+		
+		//Added
+		public FormValidation doCheckValue(@QueryParameter String value) {
+			if (value.isEmpty()) {
+				return FormValidation.warning("You must fill this box!");
+			}
+			return FormValidation.ok();
 		}
 	}
 
@@ -116,10 +138,11 @@ public class HygieiaBuildPublishStep extends AbstractStepImpl {
 			List<Integer> responseCodes = new ArrayList<>();
 			for (String hygieiaAPIUrl : hygieiaAPIUrls) {
 				this.listener.getLogger().println("Publishing data for API " + hygieiaAPIUrl.toString());
+				this.listener.getLogger().println("Application Name: " + step.getApplicationName());
 				HygieiaService hygieiaService = getHygieiaService(hygieiaAPIUrl, hygieiaDesc.getHygieiaToken(),
 						hygieiaDesc.getHygieiaJenkinsName(), hygieiaDesc.isUseProxy());
 				HygieiaResponse buildResponse = hygieiaService.publishBuildData(new BuildBuilder().createBuildRequestFromRun(run, hygieiaDesc.getHygieiaJenkinsName(), listener,
-						BuildStatus.fromString(step.buildStatus), true,new LinkedList<BuildStage>()));
+						BuildStatus.fromString(step.buildStatus), step.getApplicationName(), true,new LinkedList<BuildStage>()));
 				if (buildResponse.getResponseCode() == HttpStatus.SC_CREATED) {
 					listener.getLogger().println("Hygieia: Published Build Complete Data. " + buildResponse.toString());
 				} else {

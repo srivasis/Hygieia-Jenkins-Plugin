@@ -30,7 +30,7 @@ public class HygieiaPublisherStub extends HygieiaPublisher {
         }
     }
 
-    public static class HygieiaBuildStub extends HygieiaBuild {
+	public static class HygieiaBuildStub extends HygieiaBuild {
         public HygieiaBuildStub (boolean publishBuildStart ) {
             super(publishBuildStart);
         }
