@@ -145,6 +145,7 @@ public class HygieiaArtifactPublishStep extends AbstractStepImpl {
 					.getDescriptorByType(HygieiaPublisher.DescriptorImpl.class);
 			List<String> hygieiaAPIUrls = Arrays.asList(hygieiaDesc.getHygieiaAPIUrl().split(";"));
 			List<Integer> responseCodes = new ArrayList<>();
+			
 			for (String hygieiaAPIUrl : hygieiaAPIUrls) {
 				this.listener.getLogger().println("Publishing data for API " + hygieiaAPIUrl.toString());
 				HygieiaService hygieiaService = getHygieiaService(hygieiaAPIUrl, hygieiaDesc.getHygieiaToken(),

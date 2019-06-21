@@ -51,9 +51,9 @@ public class BuildBuilder {
     }
     
     public BuildDataCreateRequest createBuildRequestFromRun(Run<?, ?> run, String jenkinsName, TaskListener listener, BuildStatus result, String applicationName, boolean buildChangeSet, LinkedList<BuildStage> stages) {
-
     	BuildDataCreateRequest toReturn = createBuildRequestFromRun(run, jenkinsName, listener, result, buildChangeSet, stages);
-    	toReturn.setJobName(applicationName);
+    	//toReturn.setApplicationName(applicationName);
+    	toReturn.setJobName(applicationName); 
     	return toReturn;
     }
     

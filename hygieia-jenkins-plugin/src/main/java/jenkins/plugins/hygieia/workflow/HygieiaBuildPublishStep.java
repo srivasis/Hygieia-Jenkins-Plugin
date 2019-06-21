@@ -116,11 +116,13 @@ public class HygieiaBuildPublishStep extends AbstractStepImpl {
 
 			// default to global config values if not set in step, but allow
 			// step to override all global settings
-
+			this.listener.getLogger().println("[INDRESH] APPLICATION NAME: " + step.getApplicationName());
+			
 			Jenkins jenkins;
 			try {
 				jenkins = Jenkins.getInstance();
 			} catch (NullPointerException ne) {
+				this.listener.getLogger().println("[INDRESH] LEAVING RUN() IN BUILD NULL POINTER ON Jenkins.getInstance()");
 				listener.error(ne.toString());
 				return null;
 			}
@@ -132,13 +134,22 @@ public class HygieiaBuildPublishStep extends AbstractStepImpl {
 					|| hygieiaDesc.isHygieiaPublishSonarDataGlobal()
 					|| CollectionUtils.isNotEmpty(hygieiaDesc.getHygieiaPublishGenericCollectorItems());
 
-			if(skipPublish) { return new ArrayList<>();}
+			if(skipPublish) {
+				this.listener.getLogger().println("[INDRESH] hygieiaDesc.isHygieiaPublishBuildDataGlobal() = " + hygieiaDesc.isHygieiaPublishBuildDataGlobal());
+				this.listener.getLogger().println("[INDRESH] hygieiaDesc.isHygieiaPublishSonarDataGlobal() = " + hygieiaDesc.isHygieiaPublishSonarDataGlobal());
+				this.listener.getLogger().println("[INDRESH] CollectionUtils.isNotEmpty(hygieiaDesc.getHygieiaPublishGenericCollectorItems()) = " + CollectionUtils.isNotEmpty(hygieiaDesc.getHygieiaPublishGenericCollectorItems()));
+				
+				this.listener.getLogger().println("[INDRESH] LEAVING RUN() IN BUILD skipPublish SET TO TRUE");
+				return new ArrayList<>();
+			}
 
 			List<String> hygieiaAPIUrls = Arrays.asList(hygieiaDesc.getHygieiaAPIUrl().split(";"));
 			List<Integer> responseCodes = new ArrayList<>();
+			
+			this.listener.getLogger().println("[INDRESH] API URLS PASSED (Build Publish Step): " + hygieiaAPIUrls.size());
+			
 			for (String hygieiaAPIUrl : hygieiaAPIUrls) {
 				this.listener.getLogger().println("Publishing data for API " + hygieiaAPIUrl.toString());
-				this.listener.getLogger().println("Application Name: " + step.getApplicationName());
 				HygieiaService hygieiaService = getHygieiaService(hygieiaAPIUrl, hygieiaDesc.getHygieiaToken(),
 						hygieiaDesc.getHygieiaJenkinsName(), hygieiaDesc.isUseProxy());
 				HygieiaResponse buildResponse = hygieiaService.publishBuildData(new BuildBuilder().createBuildRequestFromRun(run, hygieiaDesc.getHygieiaJenkinsName(), listener,
@@ -151,6 +162,7 @@ public class HygieiaBuildPublishStep extends AbstractStepImpl {
 				}
 				responseCodes.add(Integer.valueOf(buildResponse.getResponseCode()));
 			}
+			
 			return responseCodes;
 		}
 		
